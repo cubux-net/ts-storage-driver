@@ -1,0 +1,90 @@
+{
+  "name": "@cubux/storage-driver",
+  "version": "0.1.0",
+  "description": "Simple storage driver abstraction.",
+  "keywords": [
+    "storage",
+    "abstract",
+    "abstraction",
+    "localStorage",
+    "sessionStorage",
+    "indexedDB"
+  ],
+  "author": {
+    "name": "Vovan-VE",
+    "email": "vovan-ve@yandex.ru"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cubux-net/ts-storage-driver.git"
+  },
+  "bugs": {
+    "url": "https://github.com/cubux-net/ts-storage-driver/issues"
+  },
+  "types": "dist/index.d.ts",
+  "main": "dist/index.js",
+  "module": "dist/storage-driver.esm.js",
+  "files": [
+    "dist",
+    "CHANGELOG.md",
+    "LICENSE",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=14"
+  },
+  "scripts": {
+    "build": "dts build",
+    "start": "dts watch",
+    "prepare": "dts build",
+    "test": "tsc --noEmit && dts test --passWithNoTests",
+    "test:watch": "npm test -- --watch",
+    "test:coverage": "npm test -- --coverage",
+    "analyze": "size-limit --why",
+    "lint": "dts lint",
+    "size": "size-limit"
+  },
+  "peerDependencies": {
+    "typescript": "^4"
+  },
+  "peerDependenciesMeta": {
+    "typescript": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@size-limit/preset-small-lib": "^8.0.0",
+    "@tsconfig/recommended": "^1.0.1",
+    "dts-cli": "^1.6.0",
+    "husky": "^8.0.1",
+    "lint-staged": "^13.0.3",
+    "size-limit": "^8.0.0",
+    "tslib": "^2.4.0",
+    "typescript": "~4.0"
+  },
+  "jest": {
+    "testEnvironment": "jsdom"
+  },
+  "lint-staged": {
+    "src/**/*.{js,jsx,ts,tsx,json}": [
+      "prettier --write"
+    ]
+  },
+  "prettier": {
+    "printWidth": 80,
+    "semi": true,
+    "singleQuote": true,
+    "trailingComma": "es5"
+  },
+  "size-limit": [
+    {
+      "path": "dist/storage-driver.cjs.production.min.js",
+      "limit": "10 KB"
+    },
+    {
+      "path": "dist/storage-driver.esm.js",
+      "limit": "10 KB"
+    }
+  ]
+}
