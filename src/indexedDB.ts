@@ -1,9 +1,11 @@
 import { StoreDriver } from './types';
 
+type AnyK = Exclude<IDBValidKey, any[]>;
+
 /**
  * Options to customize driver
  */
-export interface IndexedDBOptions {
+export interface IndexedDBOptions<K extends AnyK, V, S = V> {
   /**
    * Database name.
    */
@@ -21,25 +23,36 @@ export interface IndexedDBOptions {
    * tests to mock implementation or to use custom polyfill implementation.
    */
   indexedDB?: IDBFactory;
+  /**
+   * Custom function to serialize input value before putting it into DB.
+   */
+  serialize?: (value: V, key: K) => S;
+  /**
+   * Custom function to unserialize data read from DB.
+   */
+  unserialize?: (data: S, key: K) => V;
+  // TODO: error handling design to deal with serialize/unserialize errors
 }
-interface OptionsStrict extends Required<IndexedDBOptions> {}
-
-type AnyK = Exclude<IDBValidKey, any[]>;
+interface OptionsStrict<K extends AnyK, V, S>
+  extends Required<IndexedDBOptions<K, V, S>> {}
 
 const F_KEY = 'key';
 const F_VALUE = 'value';
+const asIs = <T>(v: T) => v;
 
 /**
  * Create driver to interact with `indexedDB`-like storage. Actual storage
  * can be overridden in `options`.
  */
-export function createIndexedDBDriver<K extends AnyK, V>(
-  options: IndexedDBOptions
+export function createIndexedDBDriver<K extends AnyK, V, S = V>(
+  options: IndexedDBOptions<K, V, S>
 ): Promise<StoreDriver<K, V>> {
-  const opt: OptionsStrict = {
+  const opt: OptionsStrict<K, V, S> = {
     ...options,
     dbVersion: options.dbVersion ?? 1,
     indexedDB: options.indexedDB ?? window.indexedDB,
+    serialize: options.serialize ?? (asIs as any),
+    unserialize: options.unserialize ?? (asIs as any),
   };
 
   return new Promise((resolve, reject) => {
@@ -54,27 +67,25 @@ export function createIndexedDBDriver<K extends AnyK, V>(
       db.onerror = onerror;
       db.createObjectStore(opt.table, { keyPath: F_KEY });
     };
-    r.onsuccess = () => resolve(new IndexedDBDriver<K, V>(r.result, opt));
+    r.onsuccess = () => resolve(new IndexedDBDriver(r.result, opt));
   });
 }
 
-class IndexedDBDriver<K extends AnyK, V> implements StoreDriver<K, V> {
+class IndexedDBDriver<K extends AnyK, V, S> implements StoreDriver<K, V> {
   #db: IDBDatabase;
-  #opt: OptionsStrict;
+  #opt: OptionsStrict<K, V, S>;
 
-  constructor(db: IDBDatabase, options: OptionsStrict) {
+  constructor(db: IDBDatabase, options: OptionsStrict<K, V, S>) {
     this.#db = db;
     this.#opt = options;
   }
 
   getAll(): Promise<ReadonlyMap<K, V>> {
+    const { table, unserialize } = this.#opt;
     return new Promise((resolve, reject) => {
       const items = new Map<K, V>();
 
-      const r = this.#db
-        .transaction(this.#opt.table)
-        .objectStore(this.#opt.table)
-        .openCursor();
+      const r = this.#db.transaction(table).objectStore(table).openCursor();
 
       r.onerror = () =>
         reject(new Error('Could not read database object store'));
@@ -83,7 +94,8 @@ class IndexedDBDriver<K extends AnyK, V> implements StoreDriver<K, V> {
         const cursor = r.result;
         if (cursor) {
           const v = cursor.value;
-          items.set(v[F_KEY], v[F_VALUE]);
+          const k: K = v[F_KEY];
+          items.set(k, unserialize(v[F_VALUE], k));
           cursor.continue();
         } else {
           resolve(items);
@@ -93,11 +105,9 @@ class IndexedDBDriver<K extends AnyK, V> implements StoreDriver<K, V> {
   }
 
   getItem(key: K): Promise<V | undefined> {
+    const { table, unserialize } = this.#opt;
     return new Promise((resolve, reject) => {
-      const r = this.#db
-        .transaction(this.#opt.table)
-        .objectStore(this.#opt.table)
-        .openCursor(key);
+      const r = this.#db.transaction(table).objectStore(table).openCursor(key);
 
       r.onerror = () =>
         reject(new Error('Could not read database object store'));
@@ -106,7 +116,7 @@ class IndexedDBDriver<K extends AnyK, V> implements StoreDriver<K, V> {
         const cursor = r.result;
         if (cursor) {
           const v = cursor.value;
-          resolve(v[F_VALUE]);
+          resolve(unserialize(v[F_VALUE], key));
         } else {
           resolve(undefined);
         }
@@ -115,10 +125,11 @@ class IndexedDBDriver<K extends AnyK, V> implements StoreDriver<K, V> {
   }
 
   removeItem(key: K): Promise<void> {
+    const { table } = this.#opt;
     return new Promise((resolve, reject) => {
       const r = this.#db
-        .transaction(this.#opt.table, 'readwrite')
-        .objectStore(this.#opt.table)
+        .transaction(table, 'readwrite')
+        .objectStore(table)
         .delete(key);
 
       r.onerror = () =>
@@ -129,13 +140,14 @@ class IndexedDBDriver<K extends AnyK, V> implements StoreDriver<K, V> {
   }
 
   setAll(items: ReadonlyMap<K, V>): Promise<void> {
+    const { table, serialize } = this.#opt;
     return new Promise((resolve, reject) => {
-      const tr = this.#db.transaction(this.#opt.table, 'readwrite');
+      const tr = this.#db.transaction(table, 'readwrite');
 
       tr.onerror = () => reject(new Error('Database transaction failed'));
       tr.oncomplete = () => resolve();
 
-      const store = tr.objectStore(this.#opt.table);
+      const store = tr.objectStore(table);
 
       new Promise<readonly K[]>((res) => {
         const toDelete: K[] = [];
@@ -159,7 +171,7 @@ class IndexedDBDriver<K extends AnyK, V> implements StoreDriver<K, V> {
           [
             ...toDelete.map((key) => store.delete(key)),
             ...Array.from(items).map(([key, value]) =>
-              store.put({ [F_KEY]: key, [F_VALUE]: value })
+              store.put({ [F_KEY]: key, [F_VALUE]: serialize(value, key) })
             ),
           ].map((r) => {
             r.onerror = () =>
@@ -171,13 +183,14 @@ class IndexedDBDriver<K extends AnyK, V> implements StoreDriver<K, V> {
   }
 
   setItem(key: K, value: V): Promise<void> {
+    const { table, serialize } = this.#opt;
     return new Promise((resolve, reject) => {
       const r = this.#db
-        .transaction(this.#opt.table, 'readwrite')
-        .objectStore(this.#opt.table)
+        .transaction(table, 'readwrite')
+        .objectStore(table)
         .put({
           [F_KEY]: key,
-          [F_VALUE]: value,
+          [F_VALUE]: serialize(value, key),
         });
 
       r.onerror = () =>

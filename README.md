@@ -76,19 +76,21 @@ Create driver to interact with `indexedDB`-like storage. Actual storage can be
 overridden in `options`.
 
 ```ts
-function createIndexedDBDriver<K, V>(
-  options: IndexedDBOptions
+function createIndexedDBDriver<K, V, S = V>(
+  options: IndexedDBOptions<K, V, S>
 ): Promise<StoreDriver<K, V>>
 ```
 
-Options `IndexedDBOptions` to customize driver:
+Options `IndexedDBOptions<K, V, S>` to customize driver:
 
-| Option      | Type         | Default            | Description                                                                                                                                      |
-|-------------|--------------|--------------------|--------------------------------------------------------------------------------------------------------------------------------------------------|
-| `dbName`    | `string`     | **Required**       | Database name.                                                                                                                                   |
-| `dbVersion` | `number`     | `1`                | Database version. Probably, this option should internal.                                                                                         |
-| `table`     | `string`     | **Required**       | Object store name (aka table name).                                                                                                              |
-| `indexedDB` | `IDBFactory` | `window.indexedDB` | Actual `indexedDB` factory. Default is `window.indexedDB`. Can be used in tests to mock implementation or to use custom polyfill implementation. |
+| Option        | Type                      | Default            | Description                                                                                                                                      |
+|---------------|---------------------------|--------------------|--------------------------------------------------------------------------------------------------------------------------------------------------|
+| `dbName`      | `string`                  | **Required**       | Database name.                                                                                                                                   |
+| `dbVersion`   | `number`                  | `1`                | Database version. Probably, this option should internal.                                                                                         |
+| `table`       | `string`                  | **Required**       | Object store name (aka table name).                                                                                                              |
+| `indexedDB`   | `IDBFactory`              | `window.indexedDB` | Actual `indexedDB` factory. Default is `window.indexedDB`. Can be used in tests to mock implementation or to use custom polyfill implementation. |
+| `serialize`   | `(value: V, key: K) => S` | `(v) => v`         | Custom function to serialize input value before putting it into DB.                                                                              |
+| `unserialize` | `(data: S, key: K) => V`  | `(v) => v`         | Custom function to unserialize data read from DB.                                                                                                |
 
 ### `createNullDriver()`
 
