@@ -99,5 +99,5 @@ actual driver. This driver always contains nothing in reads and does nothing on
 writes.
 
 ```ts
-function createNullDriver(): StoreDriver<any, any>
+function createNullDriver<K = any, V =  any>(): StoreDriver<K, V>
 ```

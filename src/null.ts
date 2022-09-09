@@ -5,9 +5,35 @@ import { StoreDriver } from './types';
  * omit actual driver. This driver always contains nothing in reads and does
  * nothing on writes.
  */
-export function createNullDriver(): StoreDriver<any, any> {
-  return new NullDriver();
+interface CreateNullDriverFn {
+  /**
+   * Create dummy no-op driver. Can be used for example in test environment to
+   * omit actual driver. This driver always contains nothing in reads and does
+   * nothing on writes.
+   */
+  <K, V>(): StoreDriver<K, V>;
+
+  /**
+   * Create dummy no-op driver. Can be used for example in test environment to
+   * omit actual driver. This driver always contains nothing in reads and does
+   * nothing on writes.
+   */
+  <K>(): StoreDriver<K, any>;
+
+  /**
+   * Create dummy no-op driver. Can be used for example in test environment to
+   * omit actual driver. This driver always contains nothing in reads and does
+   * nothing on writes.
+   */
+  (): StoreDriver<any, any>;
 }
+
+/**
+ * Create dummy no-op driver. Can be used for example in test environment to
+ * omit actual driver. This driver always contains nothing in reads and does
+ * nothing on writes.
+ */
+export const createNullDriver: CreateNullDriverFn = () => new NullDriver();
 
 class NullDriver implements StoreDriver<any, any> {
   getItem(key: any) {

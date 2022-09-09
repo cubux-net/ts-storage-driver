@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.0 (2022-09-10)
+
+- Upd: improve type inference for `createNullDriver()` call.
+
 ## 0.2.0 (2022-09-08)
 
 - **BREAKING**: Interface `IndexedDBOptions` became generic with 2 required
