@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.3.1 (2022-09-10)
+
+- Fix: `setAll()` in `indexedDB` driver fails to write in some cases. Whole
+  method optimized with help of `indexedDB` docs.
+
 ## 0.3.0 (2022-09-10)
 
 - Upd: improve type inference for `createNullDriver()` call.

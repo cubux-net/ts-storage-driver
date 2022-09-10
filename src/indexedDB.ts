@@ -141,44 +141,47 @@ class IndexedDBDriver<K extends AnyK, V, S> implements StoreDriver<K, V> {
 
   setAll(items: ReadonlyMap<K, V>): Promise<void> {
     const { table, serialize } = this.#opt;
-    return new Promise((resolve, reject) => {
-      const tr = this.#db.transaction(table, 'readwrite');
+    const tr = this.#db.transaction(table, 'readwrite');
 
+    return new Promise((resolve, reject) => {
       tr.onerror = () => reject(new Error('Database transaction failed'));
       tr.oncomplete = () => resolve();
 
       const store = tr.objectStore(table);
 
-      new Promise<readonly K[]>((res) => {
-        const toDelete: K[] = [];
-        const r = store.openCursor();
+      const r = store.openCursor();
+      r.onerror = () =>
+        reject(new Error('Could not read database object store'));
 
-        r.onerror = () =>
-          reject(new Error('Could not read database object store'));
-
-        r.onsuccess = () => {
-          const cursor = r.result;
-          if (cursor) {
-            const v = cursor.value;
-            toDelete.push(v[F_KEY]);
-            cursor.continue();
-          } else {
-            res(toDelete);
-          }
-        };
-      })
-        .then((toDelete) =>
-          [
-            ...toDelete.map((key) => store.delete(key)),
-            ...Array.from(items).map(([key, value]) =>
-              store.put({ [F_KEY]: key, [F_VALUE]: serialize(value, key) })
-            ),
-          ].map((r) => {
-            r.onerror = () =>
+      const restToAdd = new Map(items);
+      r.onsuccess = () => {
+        const cursor = r.result;
+        if (cursor) {
+          const v = cursor.value;
+          const key = v[F_KEY];
+          if (items.has(key)) {
+            cursor.update({
+              [F_KEY]: key,
+              [F_VALUE]: serialize(items.get(key)!, key),
+            }).onerror = () =>
               reject(new Error('Could not write database object store'));
-          })
-        )
-        .catch(reject);
+
+            restToAdd.delete(key);
+          } else {
+            cursor.delete().onerror = () =>
+              reject(new Error('Could not write database object store'));
+          }
+          cursor.continue();
+        } else {
+          for (const [key, value] of Array.from(restToAdd)) {
+            store.add({
+              [F_KEY]: key,
+              [F_VALUE]: serialize(value, key),
+            }).onerror = () =>
+              reject(new Error('Could not write database object store'));
+          }
+        }
+      };
     });
   }
 
