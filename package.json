@@ -1,6 +1,6 @@
 {
   "name": "@cubux/storage-driver",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "description": "Simple storage driver abstraction.",
   "keywords": [
     "storage",
@@ -8,7 +8,9 @@
     "abstraction",
     "localStorage",
     "sessionStorage",
-    "indexedDB"
+    "indexedDB",
+    "persist",
+    "persistent"
   ],
   "author": {
     "name": "Vovan-VE",
@@ -32,7 +34,7 @@
     "README.md"
   ],
   "engines": {
-    "node": ">=14"
+    "node": ">=18"
   },
   "scripts": {
     "build": "dts build",
@@ -46,7 +48,7 @@
     "size": "size-limit"
   },
   "peerDependencies": {
-    "typescript": "^4"
+    "typescript": "^4 || ^5"
   },
   "peerDependenciesMeta": {
     "typescript": {
@@ -54,14 +56,14 @@
     }
   },
   "devDependencies": {
-    "@size-limit/preset-small-lib": "^8.0.0",
-    "@tsconfig/recommended": "^1.0.1",
-    "dts-cli": "^1.6.0",
+    "@size-limit/preset-small-lib": "^11.0.0",
+    "@tsconfig/recommended": "^1.0.3",
+    "dts-cli": "^2.0.3",
     "husky": "^8.0.1",
-    "lint-staged": "^13.0.3",
-    "size-limit": "^8.0.0",
-    "tslib": "^2.4.0",
-    "typescript": "~4.0"
+    "lint-staged": "^15.2.0",
+    "size-limit": "^11.0.0",
+    "tslib": "^2.6.2",
+    "typescript": "~5.0"
   },
   "jest": {
     "testEnvironment": "jsdom"

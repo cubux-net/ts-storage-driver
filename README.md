@@ -2,7 +2,9 @@
 
 [![NPM latest](https://img.shields.io/npm/v/@cubux/storage-driver.svg)](https://www.npmjs.com/package/@cubux/storage-driver)
 
-Simple storage driver abstraction.
+Simple storage driver abstraction for [`@cubux/effector-persistent`](https://github.com/cubux-net/effector-persistent).
+Persist you `effector` Store with `localStorage`/`sessionStorage`, `indexedDB`,
+or implement a custom driver.
 
 ## Install
 

@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.4.0 (2023-12-06)
+
+- **BREAKING**: Drop Node < 18.
+- Add: Allow TypeScript 5 in `peerDependencies`.
+
 ## 0.3.1 (2022-09-10)
 
 - Fix: `setAll()` in `indexedDB` driver fails to write in some cases. Whole
