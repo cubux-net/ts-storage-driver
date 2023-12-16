@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.4.1 (DEV)
+
+- Fix: `createLocalStorageDriver` didn't use `serialize` and `unserialize`.
+
 ## 0.4.0 (2023-12-06)
 
 - **BREAKING**: Drop Node < 18.

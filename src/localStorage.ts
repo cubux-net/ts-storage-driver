@@ -41,8 +41,8 @@ export function createLocalStorageDriver<V>(
     // ...options,
     storage: options.storage ?? window.localStorage,
     prefix: options.prefix ?? 'persistent',
-    serialize: JSON.stringify,
-    unserialize: JSON.parse,
+    serialize: options.serialize ?? JSON.stringify,
+    unserialize: options.unserialize ?? JSON.parse,
   });
 }
 
