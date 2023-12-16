@@ -1,7 +1,11 @@
 # Changelog
 
-## 0.4.1 (DEV)
+## 0.5.0 (2023-12-16)
 
+- Add: A 3rd optional generic parameter `VOut` to all of `StoreDriver`
+  interfaces to declare what can be returned.
+- Upd: `createNullDriver` now returns driver with `VOut` set to `never` for
+  better types inference.
 - Fix: `createLocalStorageDriver` didn't use `serialize` and `unserialize`.
 
 ## 0.4.0 (2023-12-06)

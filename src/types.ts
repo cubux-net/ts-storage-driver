@@ -1,11 +1,11 @@
 /**
  * Driver interface to read/write data by single item.
  */
-export interface StoreDriverSingle<K, V> {
+export interface StoreDriverSingle<K, V, VOut extends V = V> {
   /**
    * Get value of specific item with the given key.
    */
-  getItem(key: K): Promise<V | undefined>;
+  getItem(key: K): Promise<VOut | undefined>;
   /**
    * Remove item with the given key.
    */
@@ -19,11 +19,11 @@ export interface StoreDriverSingle<K, V> {
 /**
  * Driver interface to read/write all items at once.
  */
-export interface StoreDriverMapped<K, V> {
+export interface StoreDriverMapped<K, V, VOut extends V = V> {
   /**
    * Get all items.
    */
-  getAll(): Promise<ReadonlyMap<K, V>>;
+  getAll(): Promise<ReadonlyMap<K, VOut>>;
   /**
    * Replace all stored items with the given new items. That is keys became
    * missing will be removed from storage.
@@ -34,6 +34,6 @@ export interface StoreDriverMapped<K, V> {
 /**
  * Generalized interface covering all specific interfaces.
  */
-export interface StoreDriver<K, V>
-  extends StoreDriverSingle<K, V>,
-    StoreDriverMapped<K, V> {}
+export interface StoreDriver<K, V, VOut extends V = V>
+  extends StoreDriverSingle<K, V, VOut>,
+    StoreDriverMapped<K, V, VOut> {}

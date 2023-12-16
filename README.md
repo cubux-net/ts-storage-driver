@@ -14,13 +14,13 @@ npm i @cubux/storage-driver
 
 ## API
 
-### `interface StoreDriverSingle<K, V>`
+### `interface StoreDriverSingle<K, V, VOut = V>`
 
 Driver interface to read/write data by single item.
 
 #### Methods
 
-##### `getItem(key: K): Promise<V | undefined>`
+##### `getItem(key: K): Promise<VOut | undefined>`
 
 Get value of specific item with the given key.
 
@@ -32,13 +32,13 @@ Remove item with the given key.
 
 Store the given value in item with the given key.
 
-### `interface StoreDriverMapped<K, V>`
+### `interface StoreDriverMapped<K, V, VOut = V>`
 
 Driver interface to read/write all items at once.
 
 #### Methods
 
-##### `getAll(): Promise<ReadonlyMap<K, V>>`
+##### `getAll(): Promise<ReadonlyMap<K, VOut>>`
 
 Get all items.
 
@@ -47,7 +47,7 @@ Get all items.
 Replace all stored items with the given new items. That is keys became missing
 will be removed from storage.
 
-### `interface StoreDriver<K, V>`
+### `interface StoreDriver<K, V, VOut = V>`
 
 Generalized interface covering all specific interfaces above.
 
@@ -101,5 +101,5 @@ actual driver. This driver always contains nothing in reads and does nothing on
 writes.
 
 ```ts
-function createNullDriver<K = any, V =  any>(): StoreDriver<K, V>
+function createNullDriver<K = any, V = any>(): StoreDriver<K, V, never>
 ```

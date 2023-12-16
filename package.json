@@ -1,6 +1,6 @@
 {
   "name": "@cubux/storage-driver",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "Simple storage driver abstraction.",
   "keywords": [
     "storage",
